@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:," />
+<title>PULSE — Dating App Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --scene:#060709;
+    --phone:#0d0f14;
+    --surface:#15181f;
+    --surface-2:#1c202a;
+    --surface-3:#242935;
+    --line:rgba(255,255,255,.08);
+    --text:#f5f6f8;
+    --muted:#9aa3b2;
+    --faint:#6b7280;
+    --accent:#ffb43a;
+    --accent-deep:#ff8a3d;
+    --online:#3ddc84;
+    --danger:#ff5d5d;
+    --bubble-me:#ffb43a;
+    --bubble-them:#22262f;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--scene);color:var(--text);
+    font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100dvh;padding:28px 16px;
+    background-image:
+      radial-gradient(720px 480px at 18% 12%, rgba(255,180,58,.10), transparent 60%),
+      radial-gradient(760px 520px at 84% 88%, rgba(255,110,64,.07), transparent 62%),
+      radial-gradient(520px 380px at 78% 8%, rgba(70,90,140,.10), transparent 60%);
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea{font-family:inherit;color:inherit}
+  img{display:block;max-width:100%}
+
+  /* ---------- Stage ---------- */
+  .stage{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%}
+  .stage-note{max-width:420px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.55;margin:0}
+  .stage-note strong{color:var(--text)}
+  .demo-tag{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:#14100a;background:var(--accent);border-radius:999px;padding:5px 12px;
+  }
+
+  /* ---------- Phone frame ---------- */
+  .phone{
+    position:relative;width:min(400px,100%);height:min(844px,calc(100dvh - 130px));min-height:560px;
+    background:var(--phone);border-radius:46px;overflow:hidden;flex:none;
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:0 0 0 10px #191b20,0 0 0 11px rgba(255,255,255,.10),0 42px 90px rgba(0,0,0,.65),0 12px 30px rgba(0,0,0,.5);
+  }
+  .notch{
+    position:absolute;top:11px;left:50%;transform:translateX(-50%);
+    width:104px;height:27px;border-radius:999px;background:#000;z-index:80;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .notch::after{content:"";position:absolute;right:16px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#1d2735}
+  .screen-host{position:absolute;inset:0;display:flex;flex-direction:column}
+
+  /* status bar */
+  .statusbar{
+    flex:none;height:46px;padding:14px 26px 0;display:flex;justify-content:space-between;align-items:flex-start;
+    font-size:13px;font-weight:700;position:relative;z-index:5;pointer-events:none;
+  }
+  .statusbar .sicons{display:flex;gap:6px;align-items:center;color:var(--text)}
+  .statusbar svg{width:16px;height:16px}
+
+  /* ---------- Screens ---------- */
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  .screen::-webkit-scrollbar{display:none}
+  .screen.active{display:flex}
+
+  .app-header{
+    flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:8px 18px 12px;
+  }
+  .brand{display:flex;align-items:center;gap:9px}
+  .brand-mark{
+    width:32px;height:32px;border-radius:10px;flex:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+    display:flex;align-items:center;justify-content:center;color:#181106;
+  }
+  .brand-mark svg{width:19px;height:19px}
+  .brand-name{font-family:"Sora",sans-serif;font-weight:800;font-size:19px;letter-spacing:.06em}
+  .icon-btn{
+    width:38px;height:38px;border-radius:12px;background:var(--surface-2);flex:none;
+    display:flex;align-items:center;justify-content:center;position:relative;color:var(--text);
+  }
+  .icon-btn svg{width:19px;height:19px}
+  .icon-btn .dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--phone);display:none}
+  .icon-btn.has-dot .dot{display:block}
+  .loc-line{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:12.5px;font-weight:600;padding:0 18px 10px}
+  .loc-line svg{width:13px;height:13px;color:var(--accent)}
+
+  /* ---------- Nearby grid ---------- */
+  .grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 3px 14px;
+  }
+  .tile{
+    position:relative;aspect-ratio:3/3.9;border-radius:10px;overflow:hidden;background:var(--surface-2);
+    text-align:left;padding:0;width:100%;
+  }
+  .tile img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
+  .tile .shade{position:absolute;inset:auto 0 0 0;height:58%;background:linear-gradient(to top,rgba(4,5,8,.88),rgba(4,5,8,0));pointer-events:none}
+  .tile .meta{position:absolute;left:8px;right:8px;bottom:7px;pointer-events:none}
+  .tile .tname{font-size:13px;font-weight:800;line-height:1.15;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  .tile .tdist{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#cfd4dd;margin-top:2px}
+  .tile .tdist svg{width:10px;height:10px}
+  .tile .online-dot{
+    position:absolute;top:7px;left:7px;width:10px;height:10px;border-radius:50%;
+    background:var(--online);border:2px solid rgba(0,0,0,.45);display:none;
+  }
+  .tile.is-online .online-dot{display:block}
+  .tile .fav-star{position:absolute;top:5px;right:6px;color:var(--accent);display:none}
+  .tile .fav-star svg{width:15px;height:15px;fill:var(--accent)}
+  .tile.is-fav .fav-star{display:block}
+  .tile:active{transform:scale(.985)}
+  .empty-state{padding:56px 34px;text-align:center;color:var(--muted)}
+  .empty-state .big{font-family:"Sora",sans-serif;font-size:19px;font-weight:700;color:var(--text);margin-bottom:8px}
+  .empty-state p{font-size:13.5px;line-height:1.55;margin:0 0 18px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--accent);color:#181106;font-weight:800;font-size:14.5px;
+    border-radius:14px;padding:13px 22px;width:100%;
+  }
+  .btn:active{transform:scale(.985)}
+  .btn.ghost{background:var(--surface-2);color:var(--text)}
+  .btn.small{width:auto;padding:10px 18px;font-size:13.5px}
+
+  /* ---------- Bottom nav ---------- */
+  .tabbar{
+    flex:none;display:flex;background:rgba(17,19,25,.96);border-top:1px solid var(--line);
+    padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px));position:relative;z-index:30;
+  }
+  .tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    color:var(--faint);font-size:10.5px;font-weight:700;padding:5px 0 2px;border-radius:12px;position:relative;
+  }
+  .tab svg{width:23px;height:23px}
+  .tab.active{color:var(--accent)}
+  .tab .badge{
+    position:absolute;top:0;left:calc(50% + 3px);min-width:18px;height:18px;padding:0 5px;
+    border-radius:999px;background:var(--danger);color:#fff;font-size:10.5px;font-weight:800;
+    display:none;align-items:center;justify-content:center;border:2px solid #11131a;
+  }
+  .tab .badge.show{display:flex}
+
+  /* ---------- Section heads / lists ---------- */
+  .screen-title{font-family:"Sora",sans-serif;font-size:22px;font-weight:800;margin:0}
+  .screen-sub{color:var(--muted);font-size:13px;margin:3px 0 0}
+  .head-block{padding:8px 18px 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+
+  .chat-row{
+    display:flex;gap:12px;align-items:center;width:100%;text-align:left;
+    padding:12px 18px;border-bottom:1px solid var(--line);
+  }
+  .chat-row:active{background:var(--surface)}
+  .avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center 22%;flex:none;background:var(--surface-2)}
+  .avatar-wrap{position:relative;flex:none}
+  .avatar-wrap .online-dot{position:absolute;bottom:1px;right:1px;width:13px;height:13px;border-radius:50%;background:var(--online);border:2.5px solid var(--phone);display:none}
+  .avatar-wrap.is-online .online-dot{display:block}
+  .chat-main{flex:1;min-width:0}
+  .chat-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .chat-name{font-weight:800;font-size:15px}
+  .chat-time{font-size:11.5px;color:var(--faint);font-weight:600;flex:none}
+  .chat-prev{
+    color:var(--muted);font-size:13px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .chat-row.unread .chat-prev{color:var(--text);font-weight:700}
+  .unread-badge{
+    min-width:21px;height:21px;padding:0 6px;border-radius:999px;background:var(--accent);color:#181106;
+    font-size:11.5px;font-weight:800;display:none;align-items:center;justify-content:center;flex:none;
+  }
+  .chat-row.unread .unread-badge{display:flex}
+
+  /* ---------- Favorites ---------- */
+  .fav-row{
+    display:flex;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);width:100%;text-align:left;
+  }
+  .fav-row .avatar{width:58px;height:58px}
+  .fav-row .fmeta{flex:1;min-width:0}
+  .fav-row .fname{font-weight:800;font-size:15.5px}
+  .fav-row .fsub{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .star-btn{width:38px;height:38px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none}
+  .star-btn svg{width:18px;height:18px;fill:var(--accent)}
+
+  /* ---------- My profile ---------- */
+  .me-hero{padding:6px 18px 4px;display:flex;gap:16px;align-items:center}
+  .me-hero img{width:92px;height:92px;border-radius:50%;object-fit:cover;object-position:center 22%;border:3px solid var(--surface-3)}
+  .me-name{font-family:"Sora",sans-serif;font-size:23px;font-weight:800}
+  .me-sub{color:var(--muted);font-size:13px;margin-top:3px}
+  .completion{margin:14px 18px 0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:13px 15px}
+  .completion .row{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:8px}
+  .completion .bar{height:7px;border-radius:99px;background:var(--surface-3);overflow:hidden}
+  .completion .bar i{display:block;height:100%;width:78%;background:linear-gradient(90deg,var(--accent),var(--accent-deep));border-radius:99px}
+  .form-block{padding:18px 18px 4px}
+  .form-block label{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 7px}
+  .form-block label:first-child{margin-top:0}
+  .field{
+    width:100%;background:var(--surface);border:1px solid var(--line);border-radius:13px;
+    padding:12px 14px;font-size:14.5px;font-weight:600;outline:none;resize:none;
+  }
+  .field:focus{border-color:rgba(255,180,58,.55)}
+  .photo-strip{display:flex;gap:9px}
+  .photo-cell{position:relative;width:76px;height:96px;border-radius:13px;overflow:hidden;flex:none;background:var(--surface-2)}
+  .photo-cell img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
+  .photo-cell .main-tag{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:99px}
+  .photo-add{
+    width:76px;height:96px;border-radius:13px;flex:none;border:1.5px dashed rgba(255,255,255,.25);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-size:10.5px;font-weight:700;
+  }
+  .photo-add svg{width:19px;height:19px}
+  .settings{padding:16px 18px 26px}
+  .setting-row{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    padding:14px 2px;border-bottom:1px solid var(--line);font-size:14.5px;font-weight:700;
+  }
+  .setting-row svg{width:19px;height:19px;color:var(--muted)}
+  .setting-row .chev{margin-left:auto;color:var(--faint)}
+  .setting-row .chev svg{width:16px;height:16px}
+  .demo-note{
+    margin:4px 18px 30px;background:rgba(255,180,58,.08);border:1px solid rgba(255,180,58,.25);
+    border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.55;color:#e8ddc8;
+  }
+  .demo-note strong{color:var(--accent)}
+
+  /* ---------- Overlays (profile / chat / filters) ---------- */
+  .overlay{
+    position:absolute;inset:0;background:var(--phone);z-index:40;
+    transform:translateX(100%);visibility:hidden;
+    transition:transform .32s cubic-bezier(.32,.72,.28,1),visibility 0s .34s;
+    display:flex;flex-direction:column;
+  }
+  .overlay.open{transform:translateX(0);visibility:visible;transition:transform .32s cubic-bezier(.32,.72,.28,1),visibility 0s 0s}
+  .overlay-head{
+    flex:none;display:flex;align-items:center;gap:10px;padding:52px 14px 10px;
+    background:linear-gradient(to bottom,rgba(6,7,10,.72),rgba(6,7,10,0));
+    position:absolute;top:0;left:0;right:0;z-index:5;
+  }
+  .overlay-head.plain{position:relative;background:none;padding:52px 16px 8px}
+  .back-btn{
+    width:38px;height:38px;border-radius:50%;background:rgba(10,11,15,.55);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;color:#fff;flex:none;
+  }
+  .overlay-head.plain .back-btn{background:var(--surface-2);color:var(--text)}
+  .back-btn svg{width:19px;height:19px}
+  .overlay-scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+  .overlay-scroll::-webkit-scrollbar{display:none}
+
+  .p-gallery{position:relative;height:430px;background:var(--surface-2);flex:none}
+  .p-gallery img{width:100%;height:100%;object-fit:cover}
+  .p-gallery img.crop-close{object-position:center 12%;transform:scale(1.35)}
+  .p-gallery img.crop-mid{object-position:center 30%;transform:scale(1.12)}
+  .p-gallery img.crop-wide{object-position:center 22%}
+  .p-bars{position:absolute;top:50px;left:12px;right:12px;display:flex;gap:5px;z-index:4}
+  .p-bars i{flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,.35)}
+  .p-bars i.on{background:#fff}
+  .tap-zone{position:absolute;top:0;bottom:0;width:50%;z-index:3}
+  .tap-zone.left{left:0}.tap-zone.right{right:0}
+  .p-body{padding:18px 18px 26px}
+  .p-name-row{display:flex;align-items:center;gap:9px}
+  .p-name{font-family:"Sora",sans-serif;font-size:26px;font-weight:800}
+  .p-online{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--online)}
+  .p-online i{width:8px;height:8px;border-radius:50%;background:var(--online)}
+  .p-online.off{color:var(--faint)} .p-online.off i{background:var(--faint)}
+  .p-dist{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13.5px;font-weight:600;margin-top:5px}
+  .p-dist svg{width:14px;height:14px;color:var(--accent)}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
+  .stat .k{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+  .stat .v{font-size:14.5px;font-weight:800;margin-top:3px}
+  .p-sec-title{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:22px 0 9px}
+  .p-bio{font-size:14.5px;line-height:1.6;color:#dde1e8;margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700}
+  .p-actions{
+    flex:none;display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--line);background:rgba(15,17,22,.97);
+  }
+  .p-actions .btn{flex:1}
+  .p-actions .fav-toggle{
+    width:52px;flex:none;border-radius:14px;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;color:var(--muted);
+  }
+  .p-actions .fav-toggle svg{width:22px;height:22px}
+  .p-actions .fav-toggle.on{color:var(--accent)}
+  .p-actions .fav-toggle.on svg{fill:var(--accent)}
+
+  /* ---------- Chat thread ---------- */
+  .chat-head-id{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left}
+  .chat-head-id img{width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center 22%}
+  .chat-head-id .n{font-weight:800;font-size:15.5px;line-height:1.1}
+  .chat-head-id .s{font-size:11.5px;color:var(--online);font-weight:700}
+  .chat-head-id .s.off{color:var(--faint)}
+  .thread{flex:1;overflow-y:auto;padding:14px 16px 8px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
+  .thread::-webkit-scrollbar{display:none}
+  .day-chip{align-self:center;background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:700;border-radius:999px;padding:4px 11px;margin:2px 0 6px}
+  .msg{max-width:78%;padding:10px 13px;border-radius:19px;font-size:14.5px;line-height:1.45;animation:msgIn .22s ease}
+  .msg.them{background:var(--bubble-them);align-self:flex-start;border-bottom-left-radius:6px}
+  .msg.me{background:var(--bubble-me);color:#1c1405;align-self:flex-end;border-bottom-right-radius:6px;font-weight:600}
+  .msg .mtime{display:block;font-size:10px;opacity:.65;margin-top:4px;font-weight:700}
+  @keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .typing{align-self:flex-start;background:var(--bubble-them);border-radius:19px;border-bottom-left-radius:6px;padding:13px 15px;display:none;gap:5px}
+  .typing.show{display:flex}
+  .typing i{width:7px;height:7px;border-radius:50%;background:#8b93a3;animation:blink 1.1s infinite}
+  .typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+  .composer{
+    flex:none;display:flex;gap:9px;align-items:center;padding:10px 14px calc(12px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--line);background:rgba(15,17,22,.97);
+  }
+  .composer input{
+    flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
+    padding:12px 16px;font-size:14.5px;outline:none;min-width:0;
+  }
+  .composer input:focus{border-color:rgba(255,180,58,.5)}
+  .send-btn{
+    width:44px;height:44px;border-radius:50%;background:var(--accent);color:#181106;flex:none;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .send-btn svg{width:19px;height:19px}
+  .send-btn:active{transform:scale(.94)}
+
+  /* ---------- Filter sheet ---------- */
+  .sheet-scrim{position:absolute;inset:0;background:rgba(3,4,6,.6);z-index:55;opacity:0;pointer-events:none;transition:opacity .25s}
+  .sheet-scrim.show{opacity:1;pointer-events:auto}
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:60;background:#14161d;
+    border-radius:26px 26px 0 0;border-top:1px solid var(--line);
+    transform:translateY(105%);visibility:hidden;
+    transition:transform .32s cubic-bezier(.32,.72,.28,1),visibility 0s .34s;
+    padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));max-height:82%;overflow-y:auto;scrollbar-width:none;
+  }
+  .sheet::-webkit-scrollbar{display:none}
+  .sheet.open{transform:translateY(0);visibility:visible;transition:transform .32s cubic-bezier(.32,.72,.28,1),visibility 0s 0s}
+  .sheet .grab{width:42px;height:4.5px;border-radius:99px;background:var(--surface-3);margin:2px auto 14px}
+  .sheet h3{font-family:"Sora",sans-serif;font-size:19px;margin:0 0 2px}
+  .sheet .sub{color:var(--muted);font-size:12.5px;margin:0 0 6px}
+  .f-group{margin-top:18px}
+  .f-group .f-label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .f-group .f-val{color:var(--accent);font-size:13.5px;letter-spacing:0;text-transform:none}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:none;margin-top:4px}
+  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:var(--surface-3)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);
+    margin-top:-8.5px;border:3px solid #14161d;box-shadow:0 0 0 1.5px var(--accent);cursor:pointer;
+  }
+  input[type=range]::-moz-range-track{height:5px;border-radius:99px;background:var(--surface-3)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid #14161d;box-shadow:0 0 0 1.5px var(--accent);cursor:pointer}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px}
+  .toggle-row .t-text{font-size:14.5px;font-weight:700}
+  .toggle-row .t-sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .switch{position:relative;width:52px;height:31px;flex:none}
+  .switch input{opacity:0;width:100%;height:100%;position:absolute;margin:0;cursor:pointer;z-index:2}
+  .switch .track{position:absolute;inset:0;background:var(--surface-3);border-radius:99px;transition:background .2s}
+  .switch .track::after{content:"";position:absolute;top:3px;left:3px;width:25px;height:25px;border-radius:50%;background:#fff;transition:transform .2s}
+  .switch input:checked + .track{background:var(--online)}
+  .switch input:checked + .track::after{transform:translateX(21px)}
+  .sheet-actions{display:flex;gap:10px;margin-top:24px}
+  .sheet-actions .btn{flex:1}
+
+  /* ---------- Welcome ---------- */
+  .welcome{
+    position:absolute;inset:0;z-index:70;display:flex;flex-direction:column;
+    background:
+      radial-gradient(420px 300px at 85% -4%, rgba(255,180,58,.20), transparent 60%),
+      radial-gradient(460px 340px at -10% 104%, rgba(255,110,64,.13), transparent 60%),
+      var(--phone);
+    padding:64px 28px calc(24px + env(safe-area-inset-bottom,0px));
+    transition:opacity .38s ease, visibility .38s;
+  }
+  .welcome.gone{opacity:0;visibility:hidden;pointer-events:none}
+  .welcome .logo-badge{
+    width:74px;height:74px;border-radius:22px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+    display:flex;align-items:center;justify-content:center;color:#181106;
+    box-shadow:0 14px 34px rgba(255,150,50,.30);
+  }
+  .welcome .logo-badge svg{width:42px;height:42px}
+  .welcome h1{font-family:"Sora",sans-serif;font-size:42px;font-weight:800;letter-spacing:.05em;margin:22px 0 0}
+  .welcome .tagline{font-size:16.5px;color:#c9ced8;line-height:1.5;margin:8px 0 0}
+  .w-demo{
+    margin-top:16px;display:inline-flex;align-self:flex-start;gap:7px;align-items:center;
+    background:rgba(255,180,58,.12);border:1px solid rgba(255,180,58,.35);color:#ffd894;
+    font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;
+  }
+  .w-form{margin-top:auto;display:flex;flex-direction:column;gap:11px}
+  .w-form .field{background:var(--surface);padding:14px 16px;font-size:15px}
+  .w-note{font-size:12px;color:var(--faint);line-height:1.55;text-align:center;margin:2px 6px 0}
+  .w-divider{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:11.5px;font-weight:700}
+  .w-divider::before,.w-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:absolute;left:50%;bottom:104px;transform:translate(-50%,16px);z-index:90;
+    background:#232833;border:1px solid rgba(255,255,255,.14);color:var(--text);
+    font-size:13px;font-weight:700;padding:11px 17px;border-radius:999px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;
+    box-shadow:0 12px 30px rgba(0,0,0,.5);max-width:92%;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:520px){
+    body{padding:0}
+    .stage{gap:0}
+    .stage-note,.demo-tag{display:none}
+    .phone{width:100%;height:100dvh;min-height:0;border-radius:0;border:none;box-shadow:none}
+    .notch{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <span class="demo-tag">Interactive demo prototype</span>
+
+  <div class="phone" id="phone">
+    <div class="notch"></div>
+
+    <div class="screen-host">
+      <div class="statusbar">
+        <span id="clock">9:41</span>
+        <span class="sicons">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 17h3v4H2zM7.5 13h3v8h-3zM13 9h3v12h-3zM18.5 5h3v16h-3z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 10.5a12 12 0 0 1 16 0M6.8 13.8a8 8 0 0 1 10.4 0M9.7 17a4 4 0 0 1 4.6 0"/><circle cx="12" cy="19.6" r="1.3" fill="currentColor" stroke="none"/></svg>
+          <svg viewBox="0 0 28 24" fill="none" aria-hidden="true"><rect x="1.5" y="8" width="21" height="9" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="10.5" width="13" height="4" rx="1.6" fill="currentColor"/><path d="M25.5 11v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+
+      <div class="screens">
+        <!-- ============ NEARBY ============ -->
+        <section class="screen active" id="screen-nearby">
+          <div class="app-header">
+            <div class="brand">
+              <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l2.5-6 4 12 2.5-6h7"/></svg></span>
+              <span class="brand-name">PULSE</span>
+            </div>
+            <button class="icon-btn" id="filterBtn" aria-label="Open filters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.3"/><circle cx="10" cy="17" r="2.3"/></svg>
+              <span class="dot"></span>
+            </button>
+          </div>
+          <div class="loc-line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+            <span>Shoreditch, London · <span id="nearbyCount">12 people nearby</span></span>
+          </div>
+          <div class="grid" id="nearbyGrid"></div>
+        </section>
+
+        <!-- ============ CHATS ============ -->
+        <section class="screen" id="screen-chats">
+          <div class="head-block">
+            <div>
+              <h2 class="screen-title">Chats</h2>
+              <p class="screen-sub">Your conversations</p>
+            </div>
+          </div>
+          <div id="chatList"></div>
+        </section>
+
+        <!-- ============ FAVORITES ============ -->
+        <section class="screen" id="screen-favs">
+          <div class="head-block">
+            <div>
+              <h2 class="screen-title">Favorites</h2>
+              <p class="screen-sub">People you've starred</p>
+            </div>
+          </div>
+          <div id="favList"></div>
+        </section>
+
+        <!-- ============ MY PROFILE ============ -->
+        <section class="screen" id="screen-me">
+          <div class="head-block">
+            <div>
+              <h2 class="screen-title">My Profile</h2>
+              <p class="screen-sub">How people nearby see you</p>
+            </div>
+          </div>
+          <div class="me-hero">
+            <img src="images/img-0.jpg" alt="Your demo profile photo" />
+            <div>
+              <div class="me-name" id="meNameLabel">Alex, 31</div>
+              <div class="me-sub">Shoreditch, London · Online now</div>
+            </div>
+          </div>
+          <div class="completion">
+            <div class="row"><span>Profile strength</span><span style="color:var(--accent)">78%</span></div>
+            <div class="bar"><i></i></div>
+          </div>
+          <div class="form-block">
+            <label>Photos</label>
+            <div class="photo-strip">
+              <div class="photo-cell">
+                <img src="images/img-1.jpg" alt="Your main demo photo" />
+                <span class="main-tag">MAIN</span>
+              </div>
+              <button class="photo-add" data-demo-photo>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                Add photo
+              </button>
+              <button class="photo-add" data-demo-photo>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                Add photo
+              </button>
+            </div>
+            <label for="meName">Display name</label>
+            <input class="field" id="meName" type="text" value="Alex" maxlength="24" autocomplete="off" />
+            <label for="meBio">Bio</label>
+            <textarea class="field" id="meBio" rows="3" maxlength="220">Product designer by day, amateur chef by night. Usually found cycling along the canal or hunting for the best flat white in East London.</textarea>
+          </div>
+          <div style="padding:16px 18px 0;display:flex;gap:10px">
+            <button class="btn" id="saveProfileBtn" style="flex:1">Save changes</button>
+            <button class="btn ghost" id="previewBtn" style="flex:1">Preview profile</button>
+          </div>
+          <div class="settings">
+            <button class="setting-row" data-demo-setting>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-5.5 8-5.5s6.5 1.5 8 5.5"/></svg>
+              Account details
+              <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
+            </button>
+            <button class="setting-row" data-demo-setting>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.2 8.4-7 10-3.8-1.6-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+              Privacy &amp; safety
+              <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
+            </button>
+            <button class="setting-row" data-demo-setting>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-2.5 7-2.5 7h17S18 14 18 8"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
+              Notifications
+              <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
+            </button>
+          </div>
+          <div class="demo-note"><strong>Demo prototype.</strong> PULSE is a design demo — every profile, photo and message is placeholder sample data. Nothing you type is sent, shared or stored anywhere.</div>
+        </section>
+      </div>
+
+      <!-- Bottom navigation -->
+      <nav class="tabbar">
+        <button class="tab active" data-tab="nearby">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+          Nearby
+        </button>
+        <button class="tab" data-tab="chats">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H4l2.2-3.1A8 8 0 1 1 21 12z"/></svg>
+          Chats
+          <span class="badge" id="chatBadge">3</span>
+        </button>
+        <button class="tab" data-tab="favs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7L8 13.5 3.8 9.5l5.7-.7z"/></svg>
+          Favorites
+        </button>
+        <button class="tab" data-tab="me">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.4-3.8 4.4-5.2 7.5-5.2s6.1 1.4 7.5 5.2"/></svg>
+          Profile
+        </button>
+      </nav>
+    </div>
+
+    <!-- ===== Profile overlay ===== -->
+    <div class="overlay" id="profileOverlay">
+      <div class="overlay-head">
+        <button class="back-btn" data-close-profile aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+      </div>
+      <div class="overlay-scroll" id="profileScroll">
+        <div class="p-gallery">
+          <img id="pPhoto" src="images/img-2.jpg" alt="Profile photo" />
+          <div class="p-bars" id="pBars"><i class="on"></i><i></i><i></i></div>
+          <div class="tap-zone left" id="tapPrev"></div>
+          <div class="tap-zone right" id="tapNext"></div>
+        </div>
+        <div class="p-body">
+          <div class="p-name-row">
+            <span class="p-name" id="pName">—</span>
+            <span class="p-online" id="pOnline"><i></i>Online now</span>
+          </div>
+          <div class="p-dist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+            <span id="pDist">—</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><div class="k">Height</div><div class="v" id="pHeight">—</div></div>
+            <div class="stat"><div class="k">Looking for</div><div class="v" id="pLooking">—</div></div>
+            <div class="stat"><div class="k">Active</div><div class="v" id="pActive">—</div></div>
+          </div>
+          <h4 class="p-sec-title">About</h4>
+          <p class="p-bio" id="pBio">—</p>
+          <h4 class="p-sec-title">Interests</h4>
+          <div class="chips" id="pInterests"></div>
+        </div>
+      </div>
+      <div class="p-actions">
+        <button class="fav-toggle" id="pFavBtn" aria-label="Favorite this profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7L8 13.5 3.8 9.5l5.7-.7z"/></svg>
+        </button>
+        <button class="btn" id="pMsgBtn">Message</button>
+      </div>
+    </div>
+
+    <!-- ===== Chat overlay ===== -->
+    <div class="overlay" id="chatOverlay">
+      <div class="overlay-head plain">
+        <button class="back-btn" data-close-chat aria-label="Back to chats">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="chat-head-id" id="chatHeadId">
+          <img id="chatAvatar" src="images/img-3.jpg" alt="Chat contact photo" />
+          <span>
+            <span class="n" id="chatName">—</span><br />
+            <span class="s" id="chatStatus">Online now</span>
+          </span>
+        </button>
+      </div>
+      <div class="thread" id="thread"></div>
+      <form class="composer" id="composer">
+        <input id="composerInput" type="text" placeholder="Message…" autocomplete="off" maxlength="300" />
+        <button class="send-btn" type="submit" aria-label="Send message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10.5 13.5M21 3l-6.8 18-3.7-7.5L3 9.8z"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- ===== Filter sheet ===== -->
+    <div class="sheet-scrim" id="sheetScrim"></div>
+    <div class="sheet" id="filterSheet" role="dialog" aria-label="Filters">
+      <div class="grab"></div>
+      <h3>Filters</h3>
+      <p class="sub">Narrow down who's nearby. Applies instantly in this demo.</p>
+      <div class="f-group">
+        <div class="f-label"><span>Age</span><span class="f-val" id="ageVal">18 – 60</span></div>
+        <input type="range" id="ageMin" min="18" max="60" value="18" aria-label="Minimum age" />
+        <input type="range" id="ageMax" min="18" max="60" value="60" aria-label="Maximum age" />
+      </div>
+      <div class="f-group">
+        <div class="f-label"><span>Max distance</span><span class="f-val" id="distVal">Within 25 km</span></div>
+        <input type="range" id="distMax" min="1" max="50" value="25" aria-label="Maximum distance in kilometres" />
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="t-text">Online now</div>
+          <div class="t-sub">Only show people active right now</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="onlineOnly" />
+          <span class="track"></span>
+        </label>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn ghost" id="filterReset">Reset</button>
+        <button class="btn" id="filterApply">Show results</button>
+      </div>
+    </div>
+
+    <!-- ===== Welcome / login ===== -->
+    <div class="welcome" id="welcome">
+      <div class="logo-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l2.5-6 4 12 2.5-6h7"/></svg>
+      </div>
+      <h1>PULSE</h1>
+      <p class="tagline">Meet people near you. See who's around, say hello, and take it from there.</p>
+      <span class="w-demo">Demo prototype</span>
+      <form class="w-form" id="loginForm">
+        <input class="field" type="email" placeholder="Email address" autocomplete="off" aria-label="Email address" />
+        <input class="field" type="password" placeholder="Password" autocomplete="off" aria-label="Password" />
+        <button class="btn" type="submit" style="padding:15px 22px;font-size:15.5px">Log in</button>
+        <div class="w-divider">OR</div>
+        <button class="btn ghost" type="button" id="guestBtn" style="padding:14px 22px">Continue as guest</button>
+        <p class="w-note">Demo only — no account is created, nothing is sent or stored, and all profiles are placeholder sample data.</p>
+      </form>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <p class="stage-note"><strong>PULSE</strong> is an interactive demo prototype. Tap around — browse the nearby grid, open a profile, try the filters, send a message. Nothing is real and nothing leaves this page.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Demo data (all placeholder) ---------------- */
+  var PROFILES = [
+    {id:"liam",   name:"Liam",   age:28, dist:250,  online:true,  active:"Now",       img:"images/img-4.jpg",   height:"5′11″", looking:"Dates",        interests:["Cycling","Coffee","Photography","Live music"], bio:"Architect who spends weekends on a bike or behind a camera. New to the area and always up for trying a new coffee spot — bonus points if you know a good rooftop bar."},
+    {id:"noah",   name:"Noah",   age:31, dist:480,  online:true,  active:"Now",       img:"images/img-5.jpg",   height:"6′0″",  looking:"Chats & dates", interests:["Hiking","Board games","Craft beer","Dogs"], bio:"Primary school teacher, weekend hiker. I have a terrier called Biscuit who will absolutely judge our first date. Looking for easy conversation and the occasional adventure."},
+    {id:"marcus", name:"Marcus", age:29, dist:900,  online:true,  active:"Now",       img:"images/img-6.jpg", height:"6′2″",  looking:"Dates",        interests:["Reading","Jazz","Cooking","Running"], bio:"Editor and slow Sunday-morning enthusiast. Currently working through a cookbook one recipe at a time — ask me how the soufflé went. Say hi if you like bookshops and long walks."},
+    {id:"kenji",  name:"Kenji",  age:26, dist:1200, online:false, active:"12 min ago", img:"images/img-7.jpg",  height:"5′8″",  looking:"Friends & dates", interests:["Film","Galleries","Ramen","Design"], bio:"Graphic designer and film-club regular. I'll happily debate the best ramen in London or spend a whole afternoon in one exhibition. Looking to meet kind, curious people."},
+    {id:"arjun",  name:"Arjun",  age:32, dist:1600, online:true,  active:"Now",       img:"images/img-8.jpg",  height:"5′10″", looking:"Dates",        interests:["Cricket","Travel","Street food","Tech"], bio:"Software engineer, street-food obsessive. I've eaten my way through 30 countries and I'm still chasing the perfect dosa. Up for market wanders and spontaneous weekend trips."},
+    {id:"felix",  name:"Felix",  age:27, dist:2300, online:true,  active:"Now",       img:"images/img-9.jpg",  height:"6′1″",  looking:"Chats",        interests:["Swimming","Surfing","Podcasts","Baking"], bio:"Lifeguard turned swim coach. Happiest in the water or within reach of the sea. I bake sourdough badly but enthusiastically, and I'm always after a new podcast recommendation."},
+    {id:"diego",  name:"Diego",  age:35, dist:3100, online:false, active:"1 hr ago",   img:"images/img-10.jpg",  height:"5′9″",  looking:"Dates",        interests:["Art","Salsa","Wine","Museums"], bio:"Painter and part-time gallery guide. I can talk about colour for far too long, and I make a solid tortilla española. Looking for gallery dates and good conversation."},
+    {id:"owen",   name:"Owen",   age:25, dist:3800, online:true,  active:"Now",       img:"images/img-11.jpg",   height:"5′11″", looking:"Friends & dates", interests:["Climbing","Gigs","Vinyl","Comedy"], bio:"Climber, gig-goer and collector of questionable vinyl. Autumn is my favourite season and I'll die on that hill. Say hello if you fancy a bouldering session or a comedy night."},
+    {id:"omar",   name:"Omar",   age:30, dist:4500, online:false, active:"3 hrs ago",  img:"images/img-12.jpg",   height:"6′0″",  looking:"Dates",        interests:["Startups","Football","Chess","Coffee"], bio:"Work in tech, play five-a-side badly, take chess far too seriously. Big fan of slow mornings and strong coffee. Looking to meet someone easygoing to explore the city with."},
+    {id:"theo",   name:"Theo",   age:41, dist:5600, online:true,  active:"Now",       img:"images/img-13.jpg",  height:"5′10″", looking:"Dates",        interests:["Gardening","Theatre","Wine","Walking"], bio:"Theatre producer with a very overgrown garden. I like long walks that end at a pub and plays that make you think. Here for genuine conversation and seeing where things go."},
+    {id:"kai",    name:"Kai",    age:26, dist:7200, online:false, active:"26 min ago", img:"images/img-14.jpg",   height:"5′9″",  looking:"Chats & dates", interests:["Beach","Yoga","Music","Markets"], bio:"Barista and sunrise chaser. I surf when I can, nap when I can't. Looking for relaxed chats, market mornings and people who don't take life too seriously."},
+    {id:"sam",    name:"Sam",    age:33, dist:9400, online:true,  active:"Now",       img:"images/img-15.jpg",   height:"5′7″",  looking:"Dates",        interests:["Vinyl","Cycling","Books","Gigs"], bio:"Record-shop regular and zine maker. I DJ badly at friends' parties and cycle everywhere. Say hi if you want a mixtape or a strong opinion about a B-side."}
+  ];
+
+  var REPLIES = {
+    noah:["Ha, deal — but Biscuit gets veto power 😄","There's a great trail up to Ally Pally if you fancy it this weekend?"],
+    marcus:["The soufflé collapsed, but we move 😅 Fancy a bookshop wander on Saturday?","Currently reading a brilliant novel — I'll lend it to you when we meet."],
+    felix:["Sourdough update: loaf number four actually rose this time 🎉","If you're ever near the lido at 7am, that's my natural habitat."],
+    sam:["Mixtape offer stands, by the way. Side A is all killer.","There's a record fair in Peckham next weekend if you're up for it?"],
+    generic:["Ha, fair point 😄 So what do you usually get up to around here?","Nice — tell me more!","We should grab a coffee sometime and continue this properly.","Okay that's a great answer. What's your weekend looking like?"]
+  };
+
+  var chats = {
+    noah:{unread:2, time:"14:02", messages:[
+      {from:"them", text:"Hey! Saw we're both into hiking — have you done the Capital Ring yet?", time:"13:58"},
+      {from:"them", text:"The Highgate to Stoke Newington stretch is my favourite bit", time:"14:02"}
+    ]},
+    marcus:{unread:1, time:"12:47", messages:[
+      {from:"me", text:"Hi Marcus! Your profile made me hungry, not going to lie", time:"12:40"},
+      {from:"them", text:"Haha that's the cookbook's fault. Recipe 34 this weekend if you're brave", time:"12:47"}
+    ]},
+    felix:{unread:0, time:"Tue", messages:[
+      {from:"them", text:"Morning! Lido was freezing today, character building though", time:"09:15"},
+      {from:"me", text:"You're braver than me. I need at least 20 degrees and a coffee first", time:"09:31"}
+    ]},
+    sam:{unread:0, time:"Mon", messages:[
+      {from:"me", text:"Okay, settle a debate: best B-side of all time?", time:"20:12"},
+      {from:"them", text:"Controversial, but I'm going with 'Acquiesce'. Fight me", time:"20:26"}
+    ]}
+  };
+
+  var favorites = {marcus:true, diego:true};
+  var filters = {minAge:18, maxAge:60, maxDistKm:25, onlineOnly:false};
+  var currentProfile = null;
+  var currentChat = null;
+  var photoIdx = 0;
+  var replyCount = {};
+  var me = {name:"Alex", age:31, bio:""};
+
+  /* ---------------- Helpers ---------------- */
+  function $(s, el){ return (el||document).querySelector(s); }
+  function $$(s, el){ return Array.prototype.slice.call((el||document).querySelectorAll(s)); }
+  function byId(id){ return PROFILES.filter(function(p){return p.id===id;})[0]; }
+  function fmtDist(m){ return m < 1000 ? m + " m away" : (m/1000).toFixed(1).replace(/\.0$/,"") + " km away"; }
+  function fmtDistShort(m){ return m < 1000 ? m + " m" : (m/1000).toFixed(1).replace(/\.0$/,"") + " km"; }
+  function nowTime(){ var d=new Date(); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
+
+  var toastTimer = null;
+  function toast(msg){
+    var t = $("#toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2300);
+  }
+
+  function starSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7L8 13.5 3.8 9.5l5.7-.7z"/></svg>'; }
+  function pinSVG(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>'; }
+
+  /* ---------------- Nearby grid ---------------- */
+  function passesFilters(p){
+    return p.age >= filters.minAge && p.age <= filters.maxAge &&
+           p.dist <= filters.maxDistKm*1000 &&
+           (!filters.onlineOnly || p.online);
+  }
+  function renderGrid(){
+    var list = PROFILES.filter(passesFilters).sort(function(a,b){ return a.dist - b.dist; });
+    var grid = $("#nearbyGrid");
+    if(!list.length){
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">' +
+        '<div class="big">Nobody matches those filters</div>' +
+        '<p>Try widening the age range or distance — or turn off \u201COnline now\u201D.</p>' +
+        '<button class="btn small" id="resetFromEmpty" style="margin:0 auto">Reset filters</button></div>';
+      var rb = $("#resetFromEmpty");
+      if(rb) rb.addEventListener("click", resetFilters);
+    } else {
+      grid.innerHTML = list.map(function(p){
+        return '<button class="tile' + (p.online ? " is-online" : "") + (favorites[p.id] ? " is-fav" : "") + '" data-profile="' + p.id + '">' +
+          '<img src="' + p.img + '" alt="Photo of ' + p.name + '" loading="lazy" />' +
+          '<span class="online-dot"></span>' +
+          '<span class="fav-star">' + starSVG() + '</span>' +
+          '<span class="shade"></span>' +
+          '<span class="meta"><span class="tname">' + p.name + ', ' + p.age + '</span>' +
+          '<span class="tdist">' + pinSVG() + fmtDistShort(p.dist) + '</span></span></button>';
+      }).join("");
+      $$(".tile", grid).forEach(function(t){
+        t.addEventListener("click", function(){ openProfile(t.getAttribute("data-profile")); });
+      });
+    }
+    $("#nearbyCount").textContent = list.length + (list.length === 1 ? " person" : " people") + " nearby";
+    var active = filters.minAge > 18 || filters.maxAge < 60 || filters.maxDistKm < 25 || filters.onlineOnly;
+    $("#filterBtn").classList.toggle("has-dot", !!active);
+  }
+
+  /* ---------------- Favorites ---------------- */
+  function renderFavs(){
+    var list = PROFILES.filter(function(p){ return favorites[p.id]; });
+    var host = $("#favList");
+    if(!list.length){
+      host.innerHTML = '<div class="empty-state"><div class="big">No favorites yet</div>' +
+        '<p>Tap the star on anyone\u2019s profile and they\u2019ll be saved here for later.</p></div>';
+      return;
+    }
+    host.innerHTML = list.map(function(p){
+      return '<div class="fav-row">' +
+        '<span class="avatar-wrap' + (p.online ? " is-online" : "") + '"><img class="avatar" src="' + p.img + '" alt="Photo of ' + p.name + '" /><span class="online-dot"></span></span>' +
+        '<button class="fmeta" data-fav-open="' + p.id + '" style="text-align:left;background:none;padding:0">' +
+          '<span class="fname">' + p.name + ', ' + p.age + '</span>' +
+          '<span class="fsub" style="display:block">' + fmtDist(p.dist) + (p.online ? " · Online now" : " · Active " + p.active.toLowerCase()) + '</span>' +
+        '</button>' +
+        '<button class="star-btn" data-fav-remove="' + p.id + '" aria-label="Remove ' + p.name + ' from favorites">' + starSVG() + '</button>' +
+      '</div>';
+    }).join("");
+    $$("[data-fav-open]", host).forEach(function(b){
+      b.addEventListener("click", function(){ openProfile(b.getAttribute("data-fav-open")); });
+    });
+    $$("[data-fav-remove]", host).forEach(function(b){
+      b.addEventListener("click", function(){
+        var p = byId(b.getAttribute("data-fav-remove"));
+        delete favorites[p.id];
+        toast(p.name + " removed from favorites");
+        renderFavs(); renderGrid();
+      });
+    });
+  }
+
+  /* ---------------- Profile overlay ---------------- */
+  var CROPS = ["crop-wide","crop-close","crop-mid"];
+  function setPhoto(idx){
+    photoIdx = (idx + CROPS.length) % CROPS.length;
+    var img = $("#pPhoto");
+    img.className = CROPS[photoIdx];
+    $$("#pBars i").forEach(function(b, i){ b.classList.toggle("on", i === photoIdx); });
+  }
+  function openProfile(id){
+    var p = byId(id); if(!p) return;
+    currentProfile = p;
+    var img = $("#pPhoto");
+    img.src = p.img; img.alt = "Photo of " + p.name;
+    setPhoto(0);
+    $("#pName").textContent = p.name + ", " + p.age;
+    var on = $("#pOnline");
+    if(p.online){ on.className = "p-online"; on.innerHTML = "<i></i>Online now"; }
+    else { on.className = "p-online off"; on.innerHTML = "<i></i>Active " + p.active.toLowerCase(); }
+    $("#pDist").textContent = fmtDist(p.dist);
+    $("#pHeight").textContent = p.height;
+    $("#pLooking").textContent = p.looking;
+    $("#pActive").textContent = p.online ? "Now" : p.active;
+    $("#pBio").textContent = p.bio;
+    $("#pInterests").innerHTML = p.interests.map(function(i){ return '<span class="chip">' + i + '</span>'; }).join("");
+    syncFavBtn();
+    $("#profileScroll").scrollTop = 0;
+    $("#profileOverlay").classList.add("open");
+  }
+  function syncFavBtn(){
+    if(!currentProfile) return;
+    $("#pFavBtn").classList.toggle("on", !!favorites[currentProfile.id]);
+  }
+  $("#pFavBtn").addEventListener("click", function(){
+    if(!currentProfile) return;
+    if(favorites[currentProfile.id]){ delete favorites[currentProfile.id]; toast(currentProfile.name + " removed from favorites"); }
+    else { favorites[currentProfile.id] = true; toast(currentProfile.name + " added to favorites"); }
+    syncFavBtn(); renderFavs(); renderGrid();
+  });
+  $("#tapPrev").addEventListener("click", function(){ setPhoto(photoIdx - 1); });
+  $("#tapNext").addEventListener("click", function(){ setPhoto(photoIdx + 1); });
+  $$("[data-close-profile]").forEach(function(b){
+    b.addEventListener("click", function(){ $("#profileOverlay").classList.remove("open"); });
+  });
+  $("#pMsgBtn").addEventListener("click", function(){
+    if(!currentProfile) return;
+    var id = currentProfile.id;
+    $("#profileOverlay").classList.remove("open");
+    openChat(id);
+    switchTab("chats");
+  });
+
+  /* ---------------- Chats ---------------- */
+  function totalUnread(){
+    return Object.keys(chats).reduce(function(n, k){ return n + (chats[k].unread || 0); }, 0);
+  }
+  function syncBadge(){
+    var n = totalUnread(), b = $("#chatBadge");
+    b.textContent = n; b.classList.toggle("show", n > 0);
+  }
+  function lastMsg(c){ return c.messages[c.messages.length - 1]; }
+  function renderChatList(){
+    var host = $("#chatList");
+    var ids = Object.keys(chats).sort(function(a, b){
+      return byId(a).dist - byId(b).dist;
+    });
+    host.innerHTML = ids.map(function(id){
+      var p = byId(id), c = chats[id], last = lastMsg(c);
+      var prev = last ? (last.from === "me" ? "You: " : "") + last.text : "Tap to start the conversation";
+      return '<button class="chat-row' + (c.unread ? " unread" : "") + '" data-chat="' + id + '">' +
+        '<span class="avatar-wrap' + (p.online ? " is-online" : "") + '"><img class="avatar" src="' + p.img + '" alt="Photo of ' + p.name + '" /><span class="online-dot"></span></span>' +
+        '<span class="chat-main"><span class="chat-top"><span class="chat-name">' + p.name + '</span><span class="chat-time">' + c.time + '</span></span>' +
+        '<span class="chat-prev" style="display:block">' + prev + '</span></span>' +
+        '<span class="unread-badge">' + (c.unread || "") + '</span></button>';
+    }).join("");
+    $$("[data-chat]", host).forEach(function(r){
+      r.addEventListener("click", function(){ openChat(r.getAttribute("data-chat")); });
+    });
+    syncBadge();
+  }
+  function renderThread(){
+    var c = chats[currentChat]; if(!c) return;
+    var html = '<div class="day-chip">Today</div>';
+    c.messages.forEach(function(m){
+      html += '<div class="msg ' + m.from + '">' + m.text + '<span class="mtime">' + m.time + '</span></div>';
+    });
+    html += '<div class="typing" id="typing"><i></i><i></i><i></i></div>';
+    var th = $("#thread"); th.innerHTML = html;
+    th.scrollTop = th.scrollHeight;
+  }
+  function openChat(id){
+    if(!chats[id]) chats[id] = {unread:0, time:"Now", messages:[]};
+    currentChat = id;
+    var p = byId(id);
+    $("#chatAvatar").src = p.img; $("#chatAvatar").alt = "Photo of " + p.name;
+    $("#chatName").textContent = p.name + ", " + p.age;
+    var st = $("#chatStatus");
+    st.textContent = p.online ? "Online now" : "Active " + p.active.toLowerCase();
+    st.className = "s" + (p.online ? "" : " off");
+    chats[id].unread = 0;
+    renderThread(); renderChatList();
+    $("#chatOverlay").classList.add("open");
+    setTimeout(function(){ $("#composerInput").focus(); }, 380);
+  }
+  $$("[data-close-chat]").forEach(function(b){
+    b.addEventListener("click", function(){ $("#chatOverlay").classList.remove("open"); });
+  });
+  $("#chatHeadId").addEventListener("click", function(){
+    if(!currentChat) return;
+    $("#chatOverlay").classList.remove("open");
+    openProfile(currentChat);
+  });
+  $("#composer").addEventListener("submit", function(e){
+    e.preventDefault();
+    var input = $("#composerInput"), text = input.value.trim();
+    if(!text || !currentChat) return;
+    input.value = "";
+    var c = chats[currentChat];
+    c.messages.push({from:"me", text:text.replace(/</g,"&lt;"), time:nowTime()});
+    c.time = "Now";
+    renderThread(); renderChatList();
+    var pid = currentChat;
+    setTimeout(function(){
+      var t = $("#typing"); if(t) { t.classList.add("show"); $("#thread").scrollTop = $("#thread").scrollHeight; }
+    }, 650);
+    setTimeout(function(){
+      var pool = (REPLIES[pid] && (replyCount[pid] || 0) < REPLIES[pid].length) ? REPLIES[pid] : REPLIES.generic;
+      var idx = Math.min(replyCount[pid] || 0, pool.length - 1);
+      if(REPLIES[pid] && (replyCount[pid] || 0) >= REPLIES[pid].length) idx = Math.floor(Math.random() * pool.length);
+      replyCount[pid] = (replyCount[pid] || 0) + 1;
+      c.messages.push({from:"them", text:pool[idx], time:nowTime()});
+      if(currentChat === pid && $("#chatOverlay").classList.contains("open")){ renderThread(); }
+      else { c.unread = (c.unread || 0) + 1; }
+      renderChatList();
+    }, 2100);
+  });
+
+  /* ---------------- Tabs ---------------- */
+  function switchTab(tab){
+    $$(".tab").forEach(function(t){ t.classList.toggle("active", t.getAttribute("data-tab") === tab); });
+    $$(".screen").forEach(function(s){ s.classList.remove("active"); });
+    $("#screen-" + tab).classList.add("active");
+  }
+  $$(".tab").forEach(function(t){
+    t.addEventListener("click", function(){ switchTab(t.getAttribute("data-tab")); });
+  });
+
+  /* ---------------- Filters ---------------- */
+  function openSheet(){ $("#filterSheet").classList.add("open"); $("#sheetScrim").classList.add("show"); }
+  function closeSheet(){ $("#filterSheet").classList.remove("open"); $("#sheetScrim").classList.remove("show"); }
+  $("#filterBtn").addEventListener("click", openSheet);
+  $("#sheetScrim").addEventListener("click", closeSheet);
+  function syncFilterLabels(){
+    var a = +$("#ageMin").value, b = +$("#ageMax").value;
+    if(a > b){ var tmp = a; a = b; b = tmp; }
+    $("#ageVal").textContent = a + " \u2013 " + b;
+    $("#distVal").textContent = "Within " + $("#distMax").value + " km";
+    var n = PROFILES.filter(function(p){
+      return p.age >= a && p.age <= b && p.dist <= (+$("#distMax").value)*1000 &&
+             (!$("#onlineOnly").checked || p.online);
+    }).length;
+    $("#filterApply").textContent = "Show " + n + " result" + (n === 1 ? "" : "s");
+  }
+  ["ageMin","ageMax","distMax","onlineOnly"].forEach(function(id){
+    $("#" + id).addEventListener("input", syncFilterLabels);
+  });
+  function resetFilters(){
+    $("#ageMin").value = 18; $("#ageMax").value = 60; $("#distMax").value = 25; $("#onlineOnly").checked = false;
+    filters = {minAge:18, maxAge:60, maxDistKm:25, onlineOnly:false};
+    syncFilterLabels(); renderGrid();
+  }
+  $("#filterReset").addEventListener("click", function(){ resetFilters(); toast("Filters reset"); });
+  $("#filterApply").addEventListener("click", function(){
+    var a = +$("#ageMin").value, b = +$("#ageMax").value;
+    filters.minAge = Math.min(a, b); filters.maxAge = Math.max(a, b);
+    filters.maxDistKm = +$("#distMax").value;
+    filters.onlineOnly = $("#onlineOnly").checked;
+    renderGrid(); closeSheet();
+  });
+
+  /* ---------------- My profile ---------------- */
+  $("#saveProfileBtn").addEventListener("click", function(){
+    var name = $("#meName").value.trim() || "Alex";
+    me.name = name; me.bio = $("#meBio").value;
+    $("#meNameLabel").textContent = name + ", " + me.age;
+    toast("Profile saved (demo)");
+  });
+  $("#previewBtn").addEventListener("click", function(){
+    var name = $("#meName").value.trim() || "Alex";
+    if(!byId("you")){
+      PROFILES.push({id:"you", name:name, age:me.age, dist:0, online:true, active:"Now",
+        img:"images/img-16.jpg", height:"5′11″", looking:"Dates",
+        interests:["Design","Cooking","Cycling","Coffee"],
+        bio: $("#meBio").value || "—"});
+    } else {
+      var yp = byId("you"); yp.name = name; yp.bio = $("#meBio").value;
+    }
+    openProfile("you");
+  });
+  $$("[data-demo-photo]").forEach(function(b){
+    b.addEventListener("click", function(){ toast("Photo upload is disabled in this demo"); });
+  });
+  $$("[data-demo-setting]").forEach(function(b){
+    b.addEventListener("click", function(){ toast("Settings are illustrative in this demo"); });
+  });
+
+  /* ---------------- Welcome ---------------- */
+  function enterApp(){ $("#welcome").classList.add("gone"); }
+  $("#loginForm").addEventListener("submit", function(e){ e.preventDefault(); enterApp(); toast("Welcome to PULSE — demo mode"); });
+  $("#guestBtn").addEventListener("click", function(){ enterApp(); toast("Browsing as guest — demo mode"); });
+
+  /* ---------------- Clock ---------------- */
+  function tick(){
+    var d = new Date(), h = d.getHours() % 12; if(h === 0) h = 12;
+    $("#clock").textContent = h + ":" + ("0" + d.getMinutes()).slice(-2);
+  }
+  tick(); setInterval(tick, 20000);
+
+  /* ---------------- Init ---------------- */
+  renderGrid(); renderFavs(); renderChatList(); syncFilterLabels();
+})();
+</script>
+
+<script>
+(function(){
+  var files = [];
+  for (var i = 0; i <= 16; i++) files.push('img-' + i + '.jpg');
+  var map = {};
+  function fixImg(el){
+    var s = el.getAttribute('src') || '';
+    if (s.indexOf('images/') === 0 && map[s]) {
+      el.src = map[s];
+    }
+  }
+  function fixAll(){
+    document.querySelectorAll('img[src^="images/"]').forEach(fixImg);
+  }
+  var obs = new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      m.addedNodes.forEach(function(n){
+        if (n.nodeType !== 1) return;
+        if (n.tagName === 'IMG') fixImg(n);
+        n.querySelectorAll && n.querySelectorAll('img[src^="images/"]').forEach(fixImg);
+      });
+      if (m.type === 'attributes' && m.target.tagName === 'IMG') fixImg(m.target);
+    });
+  });
+  obs.observe(document.documentElement, {childList:true, subtree:true, attributes:true, attributeFilter:['src']});
+  Promise.all(files.map(function(f){
+    return fetch('images-b64/' + f + '.b64').then(function(r){ return r.text(); }).then(function(t){
+      map['images/' + f] = 'data:image/jpeg;base64,' + t.trim();
+    }).catch(function(){});
+  })).then(fixAll);
+})();
+</script>
+</body>
+</html>
